@@ -81,7 +81,31 @@ Le programme affichera les deux mains, leur type (paire, brelan, etc.) et indiqu
 
 ## Tests
 
-Pour exécuter les tests :
+### Tests unitaires
+
+Pour exécuter les tests unitaires :
+
+```bash
+cargo test
+```
+
+### Tests d'intégration
+
+Le projet comprend deux types de tests d'intégration :
+
+1. **Tests de la bibliothèque** : Vérifient que les fonctions de parsing et d'évaluation fonctionnent correctement ensemble.
+
+```bash
+cargo test --test integration_test
+```
+
+2. **Tests de l'interface en ligne de commande** : Vérifient que le programme principal fonctionne correctement avec différentes entrées.
+
+```bash
+cargo test --test cli_test
+```
+
+Pour exécuter tous les tests (unitaires et d'intégration) :
 
 ```bash
 cargo test
@@ -94,3 +118,4 @@ cargo test
 - `src/poker/parser.rs` : Fonctions pour analyser les chaînes de caractères en cartes et mains
 - `src/main.rs` : Point d'entrée du programme
 - `demo.sh` : Script de démonstration
+- `tests/` : Tests d'intégration
