@@ -65,8 +65,30 @@ impl Hand {
             ranks[rank_index] += 1;
         }
         
+        // Count pairs and three of a kinds
+        let mut pairs = 0;
+        let mut three_of_a_kind = false;
+        
+        for &count in &ranks {
+            if count == 2 {
+                pairs += 1;
+            } else if count == 3 {
+                three_of_a_kind = true;
+            }
+        }
+        
+        // Check for three of a kind
+        if three_of_a_kind {
+            return HandType::ThreeOfAKind;
+        }
+        
+        // Check for two pair
+        if pairs == 2 {
+            return HandType::TwoPair;
+        }
+        
         // Check for one pair
-        if ranks.iter().any(|&count| count == 2) {
+        if pairs == 1 {
             return HandType::OnePair;
         }
         
@@ -131,5 +153,33 @@ mod tests {
         
         let hand = Hand::new(cards).unwrap();
         assert_eq!(hand.evaluate(), HandType::OnePair);
+    }
+    
+    #[test]
+    fn test_two_pair() {
+        let cards = vec![
+            Card { rank: Rank::Ace, suit: Suit::Hearts },
+            Card { rank: Rank::Ace, suit: Suit::Diamonds },
+            Card { rank: Rank::King, suit: Suit::Clubs },
+            Card { rank: Rank::King, suit: Suit::Spades },
+            Card { rank: Rank::Nine, suit: Suit::Hearts },
+        ];
+        
+        let hand = Hand::new(cards).unwrap();
+        assert_eq!(hand.evaluate(), HandType::TwoPair);
+    }
+    
+    #[test]
+    fn test_three_of_a_kind() {
+        let cards = vec![
+            Card { rank: Rank::Ace, suit: Suit::Hearts },
+            Card { rank: Rank::Ace, suit: Suit::Diamonds },
+            Card { rank: Rank::Ace, suit: Suit::Clubs },
+            Card { rank: Rank::King, suit: Suit::Spades },
+            Card { rank: Rank::Nine, suit: Suit::Hearts },
+        ];
+        
+        let hand = Hand::new(cards).unwrap();
+        assert_eq!(hand.evaluate(), HandType::ThreeOfAKind);
     }
 } 
