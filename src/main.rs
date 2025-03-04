@@ -144,3 +144,53 @@ fn parse_card(card_str: &str) -> Result<Card, &'static str> {
     
     Ok(Card { rank, suit })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_parse_card() {
+        assert_eq!(
+            parse_card("AS").unwrap(),
+            Card { rank: Rank::Ace, suit: Suit::Spades }
+        );
+        
+        assert_eq!(
+            parse_card("KH").unwrap(),
+            Card { rank: Rank::King, suit: Suit::Hearts }
+        );
+        
+        assert_eq!(
+            parse_card("QD").unwrap(),
+            Card { rank: Rank::Queen, suit: Suit::Diamonds }
+        );
+        
+        assert_eq!(
+            parse_card("JC").unwrap(),
+            Card { rank: Rank::Jack, suit: Suit::Clubs }
+        );
+        
+        assert_eq!(
+            parse_card("10S").unwrap(),
+            Card { rank: Rank::Ten, suit: Suit::Spades }
+        );
+        
+        assert!(parse_card("1S").is_err());
+        assert!(parse_card("AX").is_err());
+        assert!(parse_card("A").is_err());
+    }
+    
+    #[test]
+    fn test_parse_hand() {
+        let hand = parse_hand("AS KS QS JS 10S").unwrap();
+        assert_eq!(hand.evaluate(), exam::HandType::RoyalFlush);
+        
+        let hand = parse_hand("AH AD AC AS KH").unwrap();
+        assert_eq!(hand.evaluate(), exam::HandType::FourOfAKind);
+        
+        assert!(parse_hand("AS KS QS JS").is_err());
+        assert!(parse_hand("AS KS QS JS 10S 9S").is_err());
+        assert!(parse_card("AX").is_err());
+    }
+}
