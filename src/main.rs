@@ -1,4 +1,4 @@
-use exam::poker::{Card, Hand, Rank, Suit, parse_hand};
+use exam::poker::parse_hand;
 use std::env;
 
 fn main() {
@@ -28,67 +28,9 @@ fn main() {
             (_, Err(e)) => println!("Error parsing hand 2: {}", e),
         }
     } else {
-        // No arguments provided, use default hands
-        println!("No hands provided as arguments. Using default hands.");
+        // No arguments provided, just show usage information
+        println!("No hands provided as arguments.");
         println!("Usage: cargo run -- <hand1> <hand2>");
         println!("Example: cargo run -- \"AS KS QS JS 10S\" \"AH AD AC AS KH\"");
-        println!("Using default hands instead:");
-        
-        // Create two hands
-        let royal_flush = Hand::new(vec![
-            Card { rank: Rank::Ace, suit: Suit::Hearts },
-            Card { rank: Rank::King, suit: Suit::Hearts },
-            Card { rank: Rank::Queen, suit: Suit::Hearts },
-            Card { rank: Rank::Jack, suit: Suit::Hearts },
-            Card { rank: Rank::Ten, suit: Suit::Hearts },
-        ]).unwrap();
-        
-        let four_of_a_kind = Hand::new(vec![
-            Card { rank: Rank::Ace, suit: Suit::Hearts },
-            Card { rank: Rank::Ace, suit: Suit::Diamonds },
-            Card { rank: Rank::Ace, suit: Suit::Clubs },
-            Card { rank: Rank::Ace, suit: Suit::Spades },
-            Card { rank: Rank::King, suit: Suit::Hearts },
-        ]).unwrap();
-        
-        // Compare hands
-        println!("Royal Flush: {:?}", royal_flush.evaluate());
-        println!("Four of a Kind: {:?}", four_of_a_kind.evaluate());
-        
-        if royal_flush > four_of_a_kind {
-            println!("Royal Flush wins!");
-        } else {
-            println!("Four of a Kind wins!");
-        }
-        
-        // Create two hands of the same type
-        let pair_aces = Hand::new(vec![
-            Card { rank: Rank::Ace, suit: Suit::Hearts },
-            Card { rank: Rank::Ace, suit: Suit::Diamonds },
-            Card { rank: Rank::King, suit: Suit::Clubs },
-            Card { rank: Rank::Queen, suit: Suit::Spades },
-            Card { rank: Rank::Jack, suit: Suit::Hearts },
-        ]).unwrap();
-        
-        let pair_kings = Hand::new(vec![
-            Card { rank: Rank::King, suit: Suit::Hearts },
-            Card { rank: Rank::King, suit: Suit::Diamonds },
-            Card { rank: Rank::Queen, suit: Suit::Clubs },
-            Card { rank: Rank::Jack, suit: Suit::Spades },
-            Card { rank: Rank::Ten, suit: Suit::Hearts },
-        ]).unwrap();
-        
-        // Compare hands of the same type
-        println!("\nPair of Aces: {:?}", pair_aces.evaluate());
-        println!("Pair of Kings: {:?}", pair_kings.evaluate());
-        
-        if pair_aces > pair_kings {
-            println!("Pair of Aces wins!");
-        } else {
-            println!("Pair of Kings wins!");
-        }
     }
 }
-
-// Les fonctions parse_hand et parse_card ont été déplacées dans le module poker/parser.rs
-// Les tests ont également été déplacés dans leurs modules respectifs
