@@ -154,6 +154,130 @@ impl Hand {
         // If no other combination is found, it's a high card
         HandType::HighCard
     }
+    
+    pub fn get_rank_counts(&self) -> [u8; 13] {
+        let mut ranks = [0; 13];
+        
+        for card in &self.cards {
+            let rank_index = card.rank as usize - 2; // Rank::Two starts at 2
+            ranks[rank_index] += 1;
+        }
+        
+        ranks
+    }
+    
+    pub fn get_sorted_ranks(&self) -> Vec<Rank> {
+        let mut ranks: Vec<Rank> = self.cards.iter().map(|card| card.rank).collect();
+        ranks.sort_by(|a, b| b.cmp(a)); // Sort in descending order
+        ranks
+    }
+}
+
+impl PartialOrd for Hand {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Hand {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        // First compare hand types
+        let self_type = self.evaluate();
+        let other_type = other.evaluate();
+        
+        if self_type != other_type {
+            return self_type.cmp(&other_type);
+        }
+        
+        // If hand types are the same, we need to compare based on the specific hand type
+        match self_type {
+            HandType::HighCard | HandType::Flush => {
+                // For high card and flush, we compare the highest cards first
+                let mut self_cards = self.cards.clone();
+                let mut other_cards = other.cards.clone();
+                
+                // Sort cards by rank in descending order
+                self_cards.sort_by(|a, b| b.rank.cmp(&a.rank));
+                other_cards.sort_by(|a, b| b.rank.cmp(&a.rank));
+                
+                // Compare each card by rank
+                for (self_card, other_card) in self_cards.iter().zip(other_cards.iter()) {
+                    match self_card.rank.cmp(&other_card.rank) {
+                        std::cmp::Ordering::Equal => continue,
+                        ordering => return ordering,
+                    }
+                }
+                
+                std::cmp::Ordering::Equal
+            },
+            HandType::OnePair => {
+                // Find the pair rank in each hand
+                let self_counts = self.get_rank_counts();
+                let other_counts = other.get_rank_counts();
+                
+                // Find the pair rank
+                let self_pair_rank = (0..13)
+                    .find(|&i| self_counts[i] == 2)
+                    .map(|i| i + 2) // Convert index to rank value
+                    .unwrap();
+                
+                let other_pair_rank = (0..13)
+                    .find(|&i| other_counts[i] == 2)
+                    .map(|i| i + 2) // Convert index to rank value
+                    .unwrap();
+                
+                // Compare pair ranks
+                if self_pair_rank != other_pair_rank {
+                    return self_pair_rank.cmp(&other_pair_rank);
+                }
+                
+                // If pairs are the same, compare kickers in descending order
+                let mut self_kickers: Vec<usize> = (0..13)
+                    .filter(|&i| self_counts[i] == 1)
+                    .map(|i| i + 2)
+                    .collect();
+                
+                let mut other_kickers: Vec<usize> = (0..13)
+                    .filter(|&i| other_counts[i] == 1)
+                    .map(|i| i + 2)
+                    .collect();
+                
+                // Sort kickers in descending order
+                self_kickers.sort_by(|a, b| b.cmp(a));
+                other_kickers.sort_by(|a, b| b.cmp(a));
+                
+                // Compare kickers
+                for (self_kicker, other_kicker) in self_kickers.iter().zip(other_kickers.iter()) {
+                    if self_kicker != other_kicker {
+                        return self_kicker.cmp(other_kicker);
+                    }
+                }
+                
+                std::cmp::Ordering::Equal
+            },
+            // For simplicity, we'll implement just a few hand type comparisons
+            // In a complete implementation, you would handle all hand types
+            _ => {
+                // For other hand types, we'll just compare the highest cards
+                let mut self_cards = self.cards.clone();
+                let mut other_cards = other.cards.clone();
+                
+                // Sort cards by rank in descending order
+                self_cards.sort_by(|a, b| b.rank.cmp(&a.rank));
+                other_cards.sort_by(|a, b| b.rank.cmp(&a.rank));
+                
+                // Compare each card by rank
+                for (self_card, other_card) in self_cards.iter().zip(other_cards.iter()) {
+                    match self_card.rank.cmp(&other_card.rank) {
+                        std::cmp::Ordering::Equal => continue,
+                        ordering => return ordering,
+                    }
+                }
+                
+                std::cmp::Ordering::Equal
+            },
+        }
+    }
 }
 
 #[cfg(test)]
@@ -338,5 +462,89 @@ mod tests {
         
         let hand = Hand::new(cards).unwrap();
         assert_eq!(hand.evaluate(), HandType::Straight);
+    }
+    
+    #[test]
+    fn test_compare_different_hand_types() {
+        let royal_flush = Hand::new(vec![
+            Card { rank: Rank::Ace, suit: Suit::Hearts },
+            Card { rank: Rank::King, suit: Suit::Hearts },
+            Card { rank: Rank::Queen, suit: Suit::Hearts },
+            Card { rank: Rank::Jack, suit: Suit::Hearts },
+            Card { rank: Rank::Ten, suit: Suit::Hearts },
+        ]).unwrap();
+        
+        let four_of_a_kind = Hand::new(vec![
+            Card { rank: Rank::Ace, suit: Suit::Hearts },
+            Card { rank: Rank::Ace, suit: Suit::Diamonds },
+            Card { rank: Rank::Ace, suit: Suit::Clubs },
+            Card { rank: Rank::Ace, suit: Suit::Spades },
+            Card { rank: Rank::King, suit: Suit::Hearts },
+        ]).unwrap();
+        
+        assert!(royal_flush > four_of_a_kind);
+    }
+    
+    #[test]
+    fn test_compare_same_hand_type_high_card() {
+        let high_card1 = Hand::new(vec![
+            Card { rank: Rank::Ace, suit: Suit::Hearts },
+            Card { rank: Rank::King, suit: Suit::Diamonds },
+            Card { rank: Rank::Queen, suit: Suit::Clubs },
+            Card { rank: Rank::Jack, suit: Suit::Spades },
+            Card { rank: Rank::Eight, suit: Suit::Hearts },
+        ]).unwrap();
+        
+        let high_card2 = Hand::new(vec![
+            Card { rank: Rank::King, suit: Suit::Hearts },
+            Card { rank: Rank::Queen, suit: Suit::Diamonds },
+            Card { rank: Rank::Jack, suit: Suit::Clubs },
+            Card { rank: Rank::Nine, suit: Suit::Spades },
+            Card { rank: Rank::Seven, suit: Suit::Hearts },
+        ]).unwrap();
+        
+        assert!(high_card1 > high_card2);
+    }
+    
+    #[test]
+    fn test_compare_same_hand_type_one_pair() {
+        let pair_aces = Hand::new(vec![
+            Card { rank: Rank::Ace, suit: Suit::Hearts },
+            Card { rank: Rank::Ace, suit: Suit::Diamonds },
+            Card { rank: Rank::King, suit: Suit::Clubs },
+            Card { rank: Rank::Queen, suit: Suit::Spades },
+            Card { rank: Rank::Jack, suit: Suit::Hearts },
+        ]).unwrap();
+        
+        let pair_kings = Hand::new(vec![
+            Card { rank: Rank::King, suit: Suit::Hearts },
+            Card { rank: Rank::King, suit: Suit::Diamonds },
+            Card { rank: Rank::Queen, suit: Suit::Clubs },
+            Card { rank: Rank::Jack, suit: Suit::Spades },
+            Card { rank: Rank::Ten, suit: Suit::Hearts },
+        ]).unwrap();
+        
+        assert!(pair_aces > pair_kings);
+    }
+    
+    #[test]
+    fn test_compare_same_pair_different_kickers() {
+        let pair_aces_king_high = Hand::new(vec![
+            Card { rank: Rank::Ace, suit: Suit::Hearts },
+            Card { rank: Rank::Ace, suit: Suit::Diamonds },
+            Card { rank: Rank::King, suit: Suit::Clubs },
+            Card { rank: Rank::Queen, suit: Suit::Spades },
+            Card { rank: Rank::Jack, suit: Suit::Hearts },
+        ]).unwrap();
+        
+        let pair_aces_queen_high = Hand::new(vec![
+            Card { rank: Rank::Ace, suit: Suit::Hearts },
+            Card { rank: Rank::Ace, suit: Suit::Diamonds },
+            Card { rank: Rank::Queen, suit: Suit::Clubs },
+            Card { rank: Rank::Jack, suit: Suit::Spades },
+            Card { rank: Rank::Ten, suit: Suit::Hearts },
+        ]).unwrap();
+        
+        assert!(pair_aces_king_high > pair_aces_queen_high);
     }
 } 
