@@ -297,4 +297,46 @@ mod tests {
         let hand = Hand::new(cards).unwrap();
         assert_eq!(hand.evaluate(), HandType::FourOfAKind);
     }
+    
+    #[test]
+    fn test_straight_flush() {
+        let cards = vec![
+            Card { rank: Rank::Nine, suit: Suit::Hearts },
+            Card { rank: Rank::Eight, suit: Suit::Hearts },
+            Card { rank: Rank::Seven, suit: Suit::Hearts },
+            Card { rank: Rank::Six, suit: Suit::Hearts },
+            Card { rank: Rank::Five, suit: Suit::Hearts },
+        ];
+        
+        let hand = Hand::new(cards).unwrap();
+        assert_eq!(hand.evaluate(), HandType::StraightFlush);
+    }
+    
+    #[test]
+    fn test_royal_flush() {
+        let cards = vec![
+            Card { rank: Rank::Ace, suit: Suit::Hearts },
+            Card { rank: Rank::King, suit: Suit::Hearts },
+            Card { rank: Rank::Queen, suit: Suit::Hearts },
+            Card { rank: Rank::Jack, suit: Suit::Hearts },
+            Card { rank: Rank::Ten, suit: Suit::Hearts },
+        ];
+        
+        let hand = Hand::new(cards).unwrap();
+        assert_eq!(hand.evaluate(), HandType::RoyalFlush);
+    }
+    
+    #[test]
+    fn test_low_ace_straight() {
+        let cards = vec![
+            Card { rank: Rank::Ace, suit: Suit::Hearts },
+            Card { rank: Rank::Two, suit: Suit::Diamonds },
+            Card { rank: Rank::Three, suit: Suit::Clubs },
+            Card { rank: Rank::Four, suit: Suit::Spades },
+            Card { rank: Rank::Five, suit: Suit::Hearts },
+        ];
+        
+        let hand = Hand::new(cards).unwrap();
+        assert_eq!(hand.evaluate(), HandType::Straight);
+    }
 } 
