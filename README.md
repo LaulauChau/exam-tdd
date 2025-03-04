@@ -61,6 +61,20 @@ cargo run -- "AS KS QS JS 10S" "AH AD AC AS KH"
 cargo run -- "AH AD 2C 3S 4H" "KH KD 2S 3C 4D"
 ```
 
+### Script de démonstration
+
+Un script de démonstration est inclus pour montrer différents exemples de comparaisons de mains :
+
+```bash
+# Rendre le script exécutable
+chmod +x demo.sh
+
+# Exécuter la démo
+./demo.sh
+```
+
+Ce script exécute automatiquement plusieurs comparaisons de mains différentes, illustrant les différentes combinaisons et règles de départage.
+
 ### Sortie
 
 Le programme affichera les deux mains, leur type (paire, brelan, etc.) et indiquera quelle main gagne ou s'il y a égalité.
@@ -79,3 +93,4 @@ cargo test
 - `src/poker/hand.rs` : Logique d'évaluation et de comparaison des mains
 - `src/poker/parser.rs` : Fonctions pour analyser les chaînes de caractères en cartes et mains
 - `src/main.rs` : Point d'entrée du programme
+- `demo.sh` : Script de démonstration
